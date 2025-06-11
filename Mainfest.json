@@ -1,0 +1,23 @@
+{
+  "name": "Ingreso de Vehículo",
+  "short_name": "IngresoVehículo",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f4f4f4",
+  "theme_color": "#7ba1a5",
+  "description": "Formulario de ingreso de vehículos para Metalización Industrial Cargus",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "orientation": "portrait-primary",
+  "lang": "es"
+}
