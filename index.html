@@ -82,7 +82,17 @@
       }
     }
     
-  </style>
+    @media print {
+      body {
+        margin: 1cm !important;
+        padding: 0;
+      }
+      * {
+        box-shadow: none !important;
+        background: none !important;
+      }
+    }
+</style>
 </head>
 <body>
   <div class="page">
