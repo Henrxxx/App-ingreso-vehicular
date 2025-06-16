@@ -270,7 +270,7 @@
   </div>
 
 <script>
-  // Firebase config
+  // Configuración de Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyBfaasdLIwsBsKy9HlULNMzm-1ec-e83bg",
     authDomain: "ingreso-vehicular---cargus.firebaseapp.com",
@@ -280,16 +280,26 @@
     messagingSenderId: "135874840623",
     appId: "1:135874840623:web:17139f071fc0dc9cb35eda"
   };
+
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
+  // Guardado automático de todos los campos
   document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll("input, select").forEach(el => {
-    el.addEventListener("change", () => {
-      const value = el.type === "checkbox" || el.type === "radio" ? el.checked : el.value;
-      if (el.id) db.ref("formulario/" + el.id).set(value);
+    document.querySelectorAll("input, select, textarea").forEach(el => {
+      el.addEventListener("change", () => {
+        const value = el.type === "checkbox" || el.type === "radio" ? el.checked : el.value;
+        if (el.id) db.ref("formulario/" + el.id).set(value);
       });
     });
+
+    document.querySelectorAll("canvas").forEach(el => {
+      el.addEventListener("mouseup", () => guardarCanvas(el.id));
+      el.addEventListener("touchend", () => guardarCanvas(el.id));
+    });
   });
+
+  // Cargar automáticamente los datos al abrir
   window.addEventListener("load", () => {
     db.ref("formulario").once("value").then(snapshot => {
       const data = snapshot.val();
@@ -297,13 +307,13 @@
       Object.keys(data).forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          if (el.type === "checkbox" || el.type === "radio") {
-            el.checked = data[id];
-          } else if (el.tagName === "CANVAS") {
+          if (el.tagName === "CANVAS") {
             const ctx = el.getContext("2d");
             const img = new Image();
             img.onload = () => ctx.drawImage(img, 0, 0);
             img.src = data[id];
+          } else if (el.type === "checkbox" || el.type === "radio") {
+            el.checked = data[id];
           } else {
             el.value = data[id];
           }
@@ -312,19 +322,14 @@
     });
   });
 
-  // Fecha y hora automática
-  function actualizarFechaHora() {
-    const ahora = new Date();
-    const opciones = { 
-      weekday: 'short', year: 'numeric', month: '2-digit', 
-      day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' 
-    };
-    document.getElementById('fechaHora').value = ahora.toLocaleDateString('es-ES', opciones);
+  // Guardar firma como imagen base64
+  function guardarCanvas(id) {
+    const canvas = document.getElementById(id);
+    const dataURL = canvas.toDataURL();
+    db.ref("formulario/" + id).set(dataURL);
   }
-  actualizarFechaHora();
-  setInterval(actualizarFechaHora, 1000);
 
-  // Firma
+  // Lógica de firmas
   function firmaCanvas(idCanvas) {
     const canvas = document.getElementById(idCanvas);
     const ctx = canvas.getContext('2d');
@@ -333,11 +338,10 @@
 
     function getPos(e) {
       const rect = canvas.getBoundingClientRect();
-      if (e.touches && e.touches.length > 0) {
-        return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-      } else {
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      }
+      return {
+        x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+        y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+      };
     }
 
     function startDrawing(e) {
@@ -381,39 +385,32 @@
     canvas.addEventListener("touchend", endDrawing);
   }
 
-  firmaCanvas('canvasFirma1');
-  firmaCanvas('canvasFirma2');
+  // Inicializar firmas
+  firmaCanvas("canvasFirma1");
+  firmaCanvas("canvasFirma2");
 
+  // Borrar firma
   function borrarFirma(id) {
     const canvas = document.getElementById(id);
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    db.ref("formulario/" + id).set(""); // Borrar en Firebase también
   }
 
-  // Guardar en Firebase
-  function guardarFormulario() {
-    const datos = {
-      numero: document.getElementById("numDocumento").value,
-      fechaHora: document.getElementById("fechaHora").value,
-      asesor: document.getElementById("asesor").value,
-      cliente: document.getElementById("cliente").value,
-      telefono: document.getElementById("telefono").value,
-      email: document.getElementById("email").value,
-      marca: document.getElementById("marca").value,
-      placa: document.getElementById("placa").value,
-      tag: document.getElementById("tag").value,
-      numeroVehiculo: document.getElementById("numeroVehiculo").value,
-      vin: document.getElementById("vin").value,
-      condicion: document.querySelector('input[name="condicion"]:checked')?.value || ""
+  // Fecha/hora automática
+  function actualizarFechaHora() {
+    const ahora = new Date();
+    const opciones = { 
+      weekday: 'short', year: 'numeric', month: '2-digit', 
+      day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' 
     };
-
-    const ref = db.ref("formularios").push();
-    ref.set(datos)
-      .then(() => alert("✅ Datos guardados en Firebase"))
-      .catch((error) => alert("❌ Error al guardar: " + error.message));
+    const fechaInput = document.getElementById('fechaHora');
+    if (fechaInput) fechaInput.value = ahora.toLocaleDateString('es-ES', opciones);
   }
+  setInterval(actualizarFechaHora, 1000);
+  actualizarFechaHora();
 
-  // Imprimir desde Android o navegador
+  // Imprimir desde app o navegador
   function imprimirDesdeApp() {
     if (typeof Android !== "undefined") {
       Android.imprimirDesdeAndroid();
@@ -422,6 +419,3 @@
     }
   }
 </script>
-
-</body>
-</html>
