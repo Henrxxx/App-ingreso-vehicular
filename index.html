@@ -283,6 +283,168 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
+  // SINCRONIZACION MULTI FORMULARIO
+  let ignoreChange = false;
+  function listenMultiFormularios() {
+    db.ref("multiFormularios").on("value", snap => {
+      if(ignoreChange) return;
+      const cont = document.getElementById('formularios-container');
+      cont.innerHTML = "";
+      const data = snap.val() || {};
+      Object.keys(data).forEach(id => {
+        cont.appendChild(createFormularioFromData(data[id], id));
+      });
+    });
+  }
+
+  function createFormularioFromData(data, id) {
+    // clona el html original y le pone los datos y eventos
+    const original = document.getElementById('formulario-original');
+    const clone = original.cloneNode(true);
+    clone.id = "formulario_" + id;
+    // limpia todos los campos
+    Array.from(clone.querySelectorAll('input')).forEach(input => {
+      let val = data[input.id] || "";
+      if(input.type === "checkbox" || input.type === "radio") {
+        input.checked = !!val;
+      } else {
+        input.value = val;
+      }
+      // eventos de cambio sincronizados
+      input.onchange = function() {
+        const value = input.type === "checkbox" || input.type === "radio" ? input.checked : input.value;
+        ignoreChange = true;
+        db.ref("multiFormularios/" + id + "/" + input.id).set(value).then(()=>{ignoreChange=false});
+      };
+    });
+    // firma canvases
+    let firma1id = "canvasFirma1_"+id;
+    let firma2id = "canvasFirma2_"+id;
+    clone.querySelector("#canvasFirma1").id = firma1id;
+    clone.querySelector("#canvasFirma2").id = firma2id;
+    // Cargar firma de firebase
+    setTimeout(()=>{
+      initFirmaCanvasSync(firma1id, id, "firma1");
+      initFirmaCanvasSync(firma2id, id, "firma2");
+      if(data["firma1"]) loadFirmaImg(firma1id, data["firma1"]);
+      if(data["firma2"]) loadFirmaImg(firma2id, data["firma2"]);
+    }, 50);
+    // Botones
+    Array.from(clone.querySelectorAll('button')).forEach(btn => {
+      if (btn.textContent.includes('Borrar Firma')) {
+        btn.setAttribute('onclick', `borrarFirmaSync('${firma1id}','${id}','firma1')`);
+        if(btn.previousElementSibling.id === firma2id)
+          btn.setAttribute('onclick', `borrarFirmaSync('${firma2id}','${id}','firma2')`);
+      }
+      if (btn.textContent.includes('Guardar en Firebase')) btn.setAttribute('onclick', `guardarFormularioSync('${id}')`);
+      if (btn.textContent.includes('Imprimir o Guardar como PDF')) btn.setAttribute('onclick', 'imprimirDesdeApp()');
+    });
+    return clone;
+  }
+
+  function loadFirmaImg(canvasid, dataurl) {
+    const c = document.getElementById(canvasid);
+    if (!c || !dataurl) return;
+    const ctx = c.getContext('2d');
+    ctx.clearRect(0,0,c.width,c.height);
+    const img = new Image();
+    img.onload = ()=>ctx.drawImage(img,0,0,c.width,c.height);
+    img.src = dataurl;
+  }
+
+  function initFirmaCanvasSync(canvasId, formId, campo) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+      } else {
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      }
+    }
+    function startDrawing(e) {
+      isDrawing = true;
+      let p = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      e.preventDefault();
+    }
+    function draw(e) {
+      if (!isDrawing) return;
+      let p = getPos(e);
+      ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#000";
+      ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+      e.preventDefault();
+    }
+    function endDrawing() {
+      if (isDrawing) {
+        isDrawing = false;
+        ctx.beginPath();
+        const dataURL = canvas.toDataURL("image/png");
+        ignoreChange = true;
+        db.ref("multiFormularios/"+formId+"/"+campo).set(dataURL).then(()=>{ignoreChange=false});
+      }
+    }
+    canvas.onmousedown = startDrawing;
+    canvas.onmousemove = draw;
+    canvas.onmouseup = endDrawing;
+    canvas.onmouseout = endDrawing;
+    canvas.ontouchstart = startDrawing;
+    canvas.ontouchmove = draw;
+    canvas.ontouchend = endDrawing;
+  }
+
+  function borrarFirmaSync(canvasid,formid,campo){
+    const canvas = document.getElementById(canvasid);
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ignoreChange = true;
+    db.ref("multiFormularios/"+formid+"/"+campo).set("").then(()=>{ignoreChange=false});
+  }
+
+  function guardarFormularioSync(id){
+    // Guardar en formularios (igual que original, pero por id)
+    const datos = {};
+    const cont = document.getElementById("formulario_"+id);
+    Array.from(cont.querySelectorAll('input')).forEach(input => {
+      datos[input.id.replace("_"+id,"")] = input.type==="checkbox"||input.type==="radio"?input.checked:input.value;
+    });
+    db.ref("formularios").push(datos)
+      .then(() => alert("✅ Datos guardados en Firebase"))
+      .catch((error) => alert("❌ Error al guardar: " + error.message));
+  }
+
+  // NUEVO FORMULARIO: añade otro formulario como .page y lo sincroniza
+  function nuevoFormulario() {
+    const id = Date.now().toString();
+    const original = document.getElementById('formulario-original');
+    const data = {};
+    Array.from(original.querySelectorAll('input')).forEach(input => {
+      data[input.id] = input.type==="checkbox"||input.type==="radio"?input.checked:input.value;
+    });
+    db.ref("multiFormularios/"+id).set(data);
+  }
+
+  // IMPRIMIR TODOS LOS FORMULARIOS
+  function imprimirTodos() {
+    window.print();
+  }
+  function imprimirDesdeApp() {
+    window.print();
+  }
+
+  // INICIAL
+  document.addEventListener("DOMContentLoaded", () => {
+    listenMultiFormularios();
+    // el original solo para el primer formulario
+    initFirmaCanvas('canvasFirma1');
+    initFirmaCanvas('canvasFirma2');
+  });
+
   function initFirmaCanvas(idCanvas) {
     const canvas = document.getElementById(idCanvas);
     if (!canvas) return;
@@ -330,124 +492,6 @@
     canvas.addEventListener("touchstart", startDrawing, { passive: false });
     canvas.addEventListener("touchmove", draw, { passive: false });
     canvas.addEventListener("touchend", endDrawing);
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll("input, select").forEach(el => {
-      el.addEventListener("change", () => {
-        const value = el.type === "checkbox" || el.type === "radio" ? el.checked : el.value;
-        if (el.id) db.ref("formulario/" + el.id).set(value);
-      });
-    });
-    initFirmaCanvas('canvasFirma1');
-    initFirmaCanvas('canvasFirma2');
-  });
-
-  window.addEventListener("load", () => {
-    db.ref("formulario").once("value").then(snapshot => {
-      const data = snapshot.val();
-      if (!data) return;
-      Object.keys(data).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          if (el.type === "checkbox" || el.type === "radio") {
-            el.checked = data[id];
-          } else if (el.tagName === "CANVAS") {
-            const ctx = el.getContext("2d");
-            const img = new Image();
-            img.onload = () => ctx.drawImage(img, 0, 0);
-            img.src = data[id];
-          } else {
-            el.value = data[id];
-          }
-        }
-      });
-    });
-  });
-
-  function guardarCanvasEnFirebase(idCanvas) {
-    const canvas = document.getElementById(idCanvas);
-    const dataURL = canvas.toDataURL("image/png");
-    db.ref("formulario/" + idCanvas).set(dataURL);
-  }
-
-  function borrarFirma(id) {
-    const canvas = document.getElementById(id);
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    db.ref("formulario/" + id).remove();
-  }
-
-  function guardarFormulario() {
-    const datos = {
-      numero: document.getElementById("numDocumento")?.value || "",
-      fechaHora: document.getElementById("fechaHora")?.value || "",
-      asesor: document.getElementById("asesor")?.value || "",
-      cliente: document.getElementById("cliente")?.value || "",
-      telefono: document.getElementById("telefono")?.value || ""
-    };
-    const ref = db.ref("formularios").push();
-    ref.set(datos)
-      .then(() => alert("✅ Datos guardados en Firebase"))
-      .catch((error) => alert("❌ Error al guardar: " + error.message));
-  }
-
-  function imprimirDesdeApp() {
-    if (typeof Android !== "undefined") {
-      Android.imprimirDesdeAndroid();
-    } else {
-      window.print();
-    }
-  }
-
-  // NUEVO FORMULARIO: añade otro formulario como .page
-  function nuevoFormulario() {
-    const original = document.getElementById('formulario-original');
-    const clone = original.cloneNode(true);
-    // Limpia los campos del clon:
-    Array.from(clone.querySelectorAll('input')).forEach(input => {
-      if (input.type === "checkbox" || input.type === "radio") {
-        input.checked = false;
-      } else {
-        input.value = "";
-      }
-    });
-    // Limpia las firmas
-    Array.from(clone.querySelectorAll('canvas')).forEach((canvas, idx) => {
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      // Cambia los IDs para que sean únicos
-      canvas.id = (idx === 0 ? "canvasFirma1_" : "canvasFirma2_") + Date.now();
-    });
-    // Cambia los IDs de inputs para evitar duplicados en firebase
-    Array.from(clone.querySelectorAll('[id]')).forEach(el => {
-      if (!el.id.startsWith("canvasFirma")) el.id = el.id + "_" + Date.now();
-    });
-    // Vuelve a asignar eventos firma
-    setTimeout(() => {
-      Array.from(clone.querySelectorAll('canvas')).forEach(canvas => {
-        initFirmaCanvas(canvas.id);
-      });
-    }, 100);
-    // Botones de borrar firma
-    Array.from(clone.querySelectorAll('button')).forEach(btn => {
-      if (btn.textContent.includes('Borrar Firma')) {
-        btn.setAttribute('onclick', `borrarFirma('${btn.previousElementSibling.id}')`);
-      }
-      if (btn.textContent.includes('Guardar en Firebase')) {
-        btn.setAttribute('onclick', 'guardarFormulario()');
-      }
-      if (btn.textContent.includes('Imprimir o Guardar como PDF')) {
-        btn.setAttribute('onclick', 'imprimirDesdeApp()');
-      }
-    });
-    // Inserta el nuevo formulario
-    document.getElementById('formularios-container').appendChild(clone);
-  }
-
-  // IMPRIMIR TODOS LOS FORMULARIOS
-  function imprimirTodos() {
-    window.print();
   }
 </script>
 </body>
