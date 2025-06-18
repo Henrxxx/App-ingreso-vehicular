@@ -31,6 +31,7 @@
       padding: 20px;
       background: #fff;
       page-break-after: always;
+      position: relative;
     }
     .membrete { text-align: center; }
     .membrete img {
@@ -87,8 +88,21 @@
     .multi-btns button {
       margin-right: 8px;
     }
+    .btn-eliminar-formulario {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      background: #ff6666;
+      border: none;
+      color: #fff;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      padding: 4px 12px;
+    }
     @media print {
-      .no-print, .multi-btns { display: none !important; }
+      .no-print, .multi-btns, .btn-eliminar-formulario { display: none !important; }
       .page { box-shadow: none; border-radius: 0; margin: 0; }
       body { background: #fff; }
     }
@@ -99,180 +113,9 @@
     <button onclick="nuevoFormulario()">➕ Nuevo formulario</button>
     <button onclick="imprimirTodos()">🖨️ Imprimir TODOS los formularios</button>
   </div>
-
-  <!-- El formulario original AHORA FUERA DEL CONTENEDOR para que nunca desaparezca -->
-  <div class="page" id="formulario-original">
-    <div class="membrete">
-      <img src="membrete Cargus.png" alt="Membrete Cargus">
-    </div>
-    <div class="no-top">No.: <input type="text" id="numDocumento" style="width: 100px;"></div>
-    <table>
-      <tr>
-        <td class="td">Fecha / Hora:</td>
-        <td><input type="text" id="fechaHora" readonly></td>
-        <td class="td">Asesor de Servicio:</td>
-        <td><input type="text" id="asesor" placeholder="Henry Galindo"></td>
-      </tr>
-      <tr>
-        <td class="td">Nombre del Cliente:</td><td><input type="text" id="cliente"></td>
-        <td class="td">Teléfono:</td><td><input type="text" id="telefono"></td>
-      </tr>
-      <tr>
-        <td class="td">Email:</td><td colspan="3"><input type="email" id="email"></td>
-      </tr>
-      <tr>
-        <td class="td">Marca:</td><td><input type="text" id="marca"></td>
-        <td class="td">Placa:</td><td><input type="text" id="placa"></td>
-      </tr>
-      <tr>
-        <td class="td">TAG:</td><td><input type="text" id="tag"></td>
-        <td class="td">No. Vehículo:</td><td><input type="text" id="numeroVehiculo"></td>
-      </tr>
-      <tr>
-        <td class="td">VIN/Chasis:</td><td colspan="3"><input type="text" id="vin"></td>
-      </tr>
-      <tr>
-        <td class="td">Condición:</td>
-        <td colspan="3">
-          <label class="checkbox-label"><input type="radio" name="condicion" value="nuevo"> Nuevo</label>
-          <label class="checkbox-label"><input type="radio" name="condicion" value="usado"> Usado</label>
-        </td>
-      </tr>
-    </table>
-    <table>
-      <tr class="td"><th colspan="2">Estado General del Vehículo</th></tr>
-      <tr>
-        <td><input type="checkbox" id="estadoDeficiente"> Presenta deficiencia en su funcionamiento</td>
-        <td><input type="checkbox" id="estadoBueno"> No muestra daños, en buenas condiciones</td>
-      </tr>
-    </table>
-    <table>
-      <tr class="td"><th colspan="3">Reparaciones o Indicaciones de Carrocería</th></tr>
-      <tr>
-        <td><input type="checkbox" id="reparacionRequiere"> Requiere Reparación</td>
-        <td><input type="checkbox" id="reparacionRevision"> Revisión para determinar daño</td>
-        <td><input type="checkbox" id="reparacionBueno"> No muestra daños, óptimas condiciones</td>
-      </tr>
-    </table>
-    <table>
-      <tr class="td"><th colspan="3">Estado Interno del Vehículo / Consultas al Cliente</th></tr>
-      <tr>
-        <td colspan="3">
-          <label><input type="checkbox" id="internoAsiento"> Asiento</label>
-          <label><input type="checkbox" id="internoTimon"> Timón</label>
-          <label><input type="checkbox" id="internoTAG"> TAG</label>
-          <label><input type="checkbox" id="internoLuces"> Luces interiores</label>
-          <label><input type="checkbox" id="internoDocs"> Documentación</label>
-          <label><input type="checkbox" id="internoPermiso"> Permiso de explotación</label>
-          <label><input type="checkbox" id="internoFallas"> Fallas</label>
-          <label><input type="checkbox" id="internoOtros"> Otros</label>
-        </td>
-      </tr>
-    </table>
-    <table>
-      <tr class="td"><th colspan="4">Funcionamiento General</th></tr>
-      <tr>
-        <td>Kilometraje:<input type="text" id="funcKm"></td>
-        <td>Combustible: E <input type="checkbox" id="combE">
-            1/4 <input type="checkbox" id="comb14">
-            1/2 <input type="checkbox" id="comb12">
-            3/4 <input type="checkbox" id="comb34">
-            F   <input type="checkbox" id="combF"></td>
-        <td><input type="checkbox" id="funcBocinas"> Bocinas</td>
-        <td><input type="checkbox" id="funcEmbrague"> Embrague</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" id="funcFrenoEmerg"> Freno Emergencia</td>
-        <td><input type="checkbox" id="funcLuces"> Luces</td>
-        <td><input type="checkbox" id="funcAC"> A/C</td>
-        <td><input type="checkbox" id="funcParabrisas"> Parabrisas</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" id="funcPuertas"> Llavines Puertas</td>
-        <td><input type="checkbox" id="funcMotor"> Motor</td>
-        <td><input type="checkbox" id="funcLimpia"> Limpiaparabrisas</td>
-        <td><input type="checkbox" id="funcRociador"> Rociador</td>
-      </tr>
-    </table>
-    <table>
-      <tr class="td"><th colspan="4">Accesorios del Vehículo</th></tr>
-      <tr>
-        <td><input type="checkbox" id="accBateria"> Batería</td>
-        <td><input type="checkbox" id="accBornes"> Borners</td>
-        <td><input type="checkbox" id="accProtector"> Protector Batería</td>
-        <td><input type="checkbox" id="accRetrovisores"> Retrovisores</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" id="accCeniceros"> Ceniceros</td>
-        <td><input type="checkbox" id="accEncendedor"> Encendedor</td>
-        <td><input type="checkbox" id="accLlantaRepuesto"> Llanta Repuesto</td>
-        <td><input type="checkbox" id="accAlfombras"> Alfombras</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" id="accRadio"> Radio</td>
-        <td><input type="checkbox" id="accAntena"> Antena</td>
-        <td><input type="checkbox" id="accLoderas"> Loderas</td>
-        <td><input type="checkbox" id="accVarillaAceite"> Varilla Aceite</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" id="accTaponComb"> Tapón Combustible</td>
-        <td><input type="checkbox" id="accTaponAceite"> Tapón Aceite</td>
-        <td><input type="checkbox" id="accAceiteHidraulico"> Aceite Hidráulico</td>
-        <td><input type="checkbox" id="accReservaAgua"> Reserva Agua</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" id="accAguaParabrisas"> Agua Parabrisas</td>
-        <td><input type="checkbox" id="accHerramientas"> Herramientas</td>
-        <td colspan="2">Jack <input type="checkbox" id="accJack">
-          Llave ruedas <input type="checkbox" id="accLlaveRuedas">
-          Maneral <input type="checkbox" id="accManeral">
-          Otros: <input type="text" id="accOtros"></td>
-      </tr>
-    </table>
-    <table>
-      <tr class="td"><th colspan="2">Seleccione daños en la carroceria</th></tr>
-      <tr>
-        <td><input type="checkbox" id="danioPintura"> Daño en la pintura</td>
-        <td><input type="checkbox" id="danioCristal"> Daño en el cristal</td>
-        <td><input type="checkbox" id="danioLuces"> Daño en las luces</td>
-        <td><input type="checkbox" id="danioFrontal"> Daño en pared frontal</td>
-      </tr>
-      <tr>
-        <td><input type="checkbox" id="danioTecho"> Daño en el techo</td>
-        <td><input type="checkbox" id="danioPuertas"> Daño en las puertas</td>
-        <td><input type="checkbox" id="danioLaterales"> Daño en paredes laterales</td>
-        <td><input type="checkbox" id="danioCabina"> Daño en la cabina</td>
-      </tr>
-    </table>
-    <div class="firma">
-      <p>Indicaciones especiales del cliente:</p>
-      <p>a) <input type="text" id="indicacionA" style="width:90%"></p>
-      <p>b) <input type="text" id="indicacionB" style="width:90%"></p>
-      <p>c) <input type="text" id="indicacionC" style="width:90%"></p>
-    </div>
-    <table class="table">
-      <tr>
-        <td>
-          <p>Firma del cliente:</p>
-          <canvas id="canvasFirma1" width="300" height="120" style="border:1px solid #000"></canvas><br>
-          <button class="no-print" type="button" onclick="borrarFirma('canvasFirma1')">Borrar Firma</button>
-        </td>
-        <td>
-          <p>Firma del Asesor:</p>
-          <canvas id="canvasFirma2" width="300" height="120" style="border:1px solid #000"></canvas><br>
-          <button class="no-print" type="button" onclick="borrarFirma('canvasFirma2')">Borrar Firma</button>
-        </td>
-      </tr>
-    </table>
-    <div style="text-align:center;">
-      <button class="no-print" onclick="guardarFormulario()">💾 Guardar en Firebase</button>
-      <button class="no-print" onclick="imprimirDesdeApp()">🖨️ Imprimir o Guardar como PDF</button>
-    </div>
+  <div id="formularios-container">
+    <!-- Los formularios se cargarán aquí dinámicamente -->
   </div>
-
-  <!-- AQUÍ SOLO LOS FORMULARIOS SINCRONIZADOS, EL ORIGINAL QUEDA FUERA -->
-  <div id="formularios-container"></div>
-
 <script>
   // Firebase Config
   const firebaseConfig = {
@@ -287,183 +130,392 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Función para obtener los datos del formulario original
-  function getFormularioDataFromDOM(node) {
-    const data = {};
-    Array.from(node.querySelectorAll('input')).forEach(input => {
-      data[input.id] = (input.type === "checkbox" || input.type === "radio") ? input.checked : input.value;
-    });
-    return data;
-  }
+  // ----- FORMULARIO BASE -----
+  // (El HTML del formulario base, sin id repetidos, se usará para clonar nuevos formularios)
+  const FORMULARIO_BASE = `
+    <div class="page">
+      <button class="btn-eliminar-formulario no-print" style="display:none;" type="button">🗑️ Eliminar</button>
+      <div class="membrete">
+        <img src="membrete Cargus.png" alt="Membrete Cargus">
+      </div>
+      <div class="no-top">No.: <input type="text" data-field="numDocumento" style="width: 100px;"></div>
+      <table>
+        <tr>
+          <td class="td">Fecha / Hora:</td>
+          <td><input type="text" data-field="fechaHora" readonly></td>
+          <td class="td">Asesor de Servicio:</td>
+          <td><input type="text" data-field="asesor" placeholder="Henry Galindo"></td>
+        </tr>
+        <tr>
+          <td class="td">Nombre del Cliente:</td><td><input type="text" data-field="cliente"></td>
+          <td class="td">Teléfono:</td><td><input type="text" data-field="telefono"></td>
+        </tr>
+        <tr>
+          <td class="td">Email:</td><td colspan="3"><input type="email" data-field="email"></td>
+        </tr>
+        <tr>
+          <td class="td">Marca:</td><td><input type="text" data-field="marca"></td>
+          <td class="td">Placa:</td><td><input type="text" data-field="placa"></td>
+        </tr>
+        <tr>
+          <td class="td">TAG:</td><td><input type="text" data-field="tag"></td>
+          <td class="td">No. Vehículo:</td><td><input type="text" data-field="numeroVehiculo"></td>
+        </tr>
+        <tr>
+          <td class="td">VIN/Chasis:</td><td colspan="3"><input type="text" data-field="vin"></td>
+        </tr>
+        <tr>
+          <td class="td">Condición:</td>
+          <td colspan="3">
+            <label class="checkbox-label"><input type="radio" name="condicion" value="nuevo" data-field="condicion"> Nuevo</label>
+            <label class="checkbox-label"><input type="radio" name="condicion" value="usado" data-field="condicion"> Usado</label>
+          </td>
+        </tr>
+      </table>
+      <table>
+        <tr class="td"><th colspan="2">Estado General del Vehículo</th></tr>
+        <tr>
+          <td><input type="checkbox" data-field="estadoDeficiente"> Presenta deficiencia en su funcionamiento</td>
+          <td><input type="checkbox" data-field="estadoBueno"> No muestra daños, en buenas condiciones</td>
+        </tr>
+      </table>
+      <table>
+        <tr class="td"><th colspan="3">Reparaciones o Indicaciones de Carrocería</th></tr>
+        <tr>
+          <td><input type="checkbox" data-field="reparacionRequiere"> Requiere Reparación</td>
+          <td><input type="checkbox" data-field="reparacionRevision"> Revisión para determinar daño</td>
+          <td><input type="checkbox" data-field="reparacionBueno"> No muestra daños, óptimas condiciones</td>
+        </tr>
+      </table>
+      <table>
+        <tr class="td"><th colspan="3">Estado Interno del Vehículo / Consultas al Cliente</th></tr>
+        <tr>
+          <td colspan="3">
+            <label><input type="checkbox" data-field="internoAsiento"> Asiento</label>
+            <label><input type="checkbox" data-field="internoTimon"> Timón</label>
+            <label><input type="checkbox" data-field="internoTAG"> TAG</label>
+            <label><input type="checkbox" data-field="internoLuces"> Luces interiores</label>
+            <label><input type="checkbox" data-field="internoDocs"> Documentación</label>
+            <label><input type="checkbox" data-field="internoPermiso"> Permiso de explotación</label>
+            <label><input type="checkbox" data-field="internoFallas"> Fallas</label>
+            <label><input type="checkbox" data-field="internoOtros"> Otros</label>
+          </td>
+        </tr>
+      </table>
+      <table>
+        <tr class="td"><th colspan="4">Funcionamiento General</th></tr>
+        <tr>
+          <td>Kilometraje:<input type="text" data-field="funcKm"></td>
+          <td>Combustible: E <input type="checkbox" data-field="combE">
+              1/4 <input type="checkbox" data-field="comb14">
+              1/2 <input type="checkbox" data-field="comb12">
+              3/4 <input type="checkbox" data-field="comb34">
+              F   <input type="checkbox" data-field="combF"></td>
+          <td><input type="checkbox" data-field="funcBocinas"> Bocinas</td>
+          <td><input type="checkbox" data-field="funcEmbrague"> Embrague</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" data-field="funcFrenoEmerg"> Freno Emergencia</td>
+          <td><input type="checkbox" data-field="funcLuces"> Luces</td>
+          <td><input type="checkbox" data-field="funcAC"> A/C</td>
+          <td><input type="checkbox" data-field="funcParabrisas"> Parabrisas</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" data-field="funcPuertas"> Llavines Puertas</td>
+          <td><input type="checkbox" data-field="funcMotor"> Motor</td>
+          <td><input type="checkbox" data-field="funcLimpia"> Limpiaparabrisas</td>
+          <td><input type="checkbox" data-field="funcRociador"> Rociador</td>
+        </tr>
+      </table>
+      <table>
+        <tr class="td"><th colspan="4">Accesorios del Vehículo</th></tr>
+        <tr>
+          <td><input type="checkbox" data-field="accBateria"> Batería</td>
+          <td><input type="checkbox" data-field="accBornes"> Borners</td>
+          <td><input type="checkbox" data-field="accProtector"> Protector Batería</td>
+          <td><input type="checkbox" data-field="accRetrovisores"> Retrovisores</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" data-field="accCeniceros"> Ceniceros</td>
+          <td><input type="checkbox" data-field="accEncendedor"> Encendedor</td>
+          <td><input type="checkbox" data-field="accLlantaRepuesto"> Llanta Repuesto</td>
+          <td><input type="checkbox" data-field="accAlfombras"> Alfombras</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" data-field="accRadio"> Radio</td>
+          <td><input type="checkbox" data-field="accAntena"> Antena</td>
+          <td><input type="checkbox" data-field="accLoderas"> Loderas</td>
+          <td><input type="checkbox" data-field="accVarillaAceite"> Varilla Aceite</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" data-field="accTaponComb"> Tapón Combustible</td>
+          <td><input type="checkbox" data-field="accTaponAceite"> Tapón Aceite</td>
+          <td><input type="checkbox" data-field="accAceiteHidraulico"> Aceite Hidráulico</td>
+          <td><input type="checkbox" data-field="accReservaAgua"> Reserva Agua</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" data-field="accAguaParabrisas"> Agua Parabrisas</td>
+          <td><input type="checkbox" data-field="accHerramientas"> Herramientas</td>
+          <td colspan="2">Jack <input type="checkbox" data-field="accJack">
+            Llave ruedas <input type="checkbox" data-field="accLlaveRuedas">
+            Maneral <input type="checkbox" data-field="accManeral">
+            Otros: <input type="text" data-field="accOtros"></td>
+        </tr>
+      </table>
+      <table>
+        <tr class="td"><th colspan="2">Seleccione daños en la carroceria</th></tr>
+        <tr>
+          <td><input type="checkbox" data-field="danioPintura"> Daño en la pintura</td>
+          <td><input type="checkbox" data-field="danioCristal"> Daño en el cristal</td>
+          <td><input type="checkbox" data-field="danioLuces"> Daño en las luces</td>
+          <td><input type="checkbox" data-field="danioFrontal"> Daño en pared frontal</td>
+        </tr>
+        <tr>
+          <td><input type="checkbox" data-field="danioTecho"> Daño en el techo</td>
+          <td><input type="checkbox" data-field="danioPuertas"> Daño en las puertas</td>
+          <td><input type="checkbox" data-field="danioLaterales"> Daño en paredes laterales</td>
+          <td><input type="checkbox" data-field="danioCabina"> Daño en la cabina</td>
+        </tr>
+      </table>
+      <div class="firma">
+        <p>Indicaciones especiales del cliente:</p>
+        <p>a) <input type="text" data-field="indicacionA" style="width:90%"></p>
+        <p>b) <input type="text" data-field="indicacionB" style="width:90%"></p>
+        <p>c) <input type="text" data-field="indicacionC" style="width:90%"></p>
+      </div>
+      <table class="table">
+        <tr>
+          <td>
+            <p>Firma del cliente:</p>
+            <canvas class="canvas-firma" width="300" height="120" data-field="firmaCliente" style="border:1px solid #000"></canvas><br>
+            <button class="no-print btn-borrar-firma" type="button">Borrar Firma</button>
+          </td>
+          <td>
+            <p>Firma del Asesor:</p>
+            <canvas class="canvas-firma" width="300" height="120" data-field="firmaAsesor" style="border:1px solid #000"></canvas><br>
+            <button class="no-print btn-borrar-firma" type="button">Borrar Firma</button>
+          </td>
+        </tr>
+      </table>
+      <div style="text-align:center;">
+        <button class="no-print btn-guardar-firebase" type="button">💾 Guardar en Firebase</button>
+        <button class="no-print btn-imprimir" type="button">🖨️ Imprimir o Guardar como PDF</button>
+      </div>
+    </div>`;
 
-  function setFormularioDataToDOM(node, data) {
-    Array.from(node.querySelectorAll('input')).forEach(input => {
-      if (data[input.id] !== undefined) {
-        if (input.type === "checkbox" || input.type === "radio") {
-          input.checked = !!data[input.id];
-        } else {
-          input.value = data[input.id];
-        }
-      }
-    });
-  }
-
-  function setFirmaCanvasFromData(canvas, data) {
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    if (data) {
-      const img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      img.src = data;
-    }
-  }
-
-  function initFirmaCanvasRealtime(canvas, formKey, firmaKey) {
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      if (e.touches && e.touches.length > 0) {
-        return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+  // ----- UTILIDADES -----
+  // Convierte los datos del formulario DOM a un objeto JS
+  function formularioADatos(pageDiv) {
+    const datos = {};
+    pageDiv.querySelectorAll('[data-field]').forEach(input => {
+      const key = input.getAttribute('data-field');
+      if (input.type === 'checkbox') {
+        datos[key] = !!input.checked;
+      } else if (input.type === 'radio') {
+        if (input.checked) datos[key] = input.value;
+      } else if (input.tagName === 'CANVAS') {
+        datos[key] = input.toDataURL();
       } else {
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        datos[key] = input.value;
       }
-    }
-    function startDrawing(e) {
+    });
+    // Firmas (canvas)
+    pageDiv.querySelectorAll('.canvas-firma').forEach(canvas => {
+      const key = canvas.getAttribute('data-field');
+      datos[key] = canvas.toDataURL();
+    });
+    return datos;
+  }
+  // Rellena los campos de un formulario DOM desde objeto JS
+  function datosAFormulario(pageDiv, datos) {
+    pageDiv.querySelectorAll('[data-field]').forEach(input => {
+      const key = input.getAttribute('data-field');
+      if (typeof datos[key] === 'undefined') return;
+      if (input.type === 'checkbox') {
+        input.checked = !!datos[key];
+      } else if (input.type === 'radio') {
+        input.checked = (input.value === datos[key]);
+      } else if (input.tagName === 'CANVAS') {
+        if (datos[key]) {
+          const ctx = input.getContext('2d');
+          const img = new Image();
+          img.onload = () => ctx.drawImage(img, 0, 0, input.width, input.height);
+          img.src = datos[key];
+        }
+      } else {
+        input.value = datos[key];
+      }
+    });
+  }
+
+  // Inicializa canvas de firma
+  function initFirmaCanvas(canvas) {
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false, lastPoint = null;
+    canvas.addEventListener('mousedown', e => {
       isDrawing = true;
-      let p = getPos(e);
+      lastPoint = { x: e.offsetX, y: e.offsetY };
       ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
-      e.preventDefault();
-    }
-    function draw(e) {
+      ctx.moveTo(lastPoint.x, lastPoint.y);
+    });
+    canvas.addEventListener('mousemove', e => {
       if (!isDrawing) return;
-      let p = getPos(e);
       ctx.lineWidth = 2;
       ctx.lineCap = "round";
+      ctx.lineJoin = "round";
       ctx.strokeStyle = "#000";
-      ctx.lineTo(p.x, p.y);
+      ctx.lineTo(e.offsetX, e.offsetY);
       ctx.stroke();
       ctx.beginPath();
-      ctx.moveTo(p.x, p.y);
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+    canvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+      ctx.beginPath();
+    });
+    canvas.addEventListener('mouseout', () => {
+      isDrawing = false;
+      ctx.beginPath();
+    });
+
+    // touch
+    canvas.addEventListener('touchstart', e => {
+      isDrawing = true;
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches[0];
+      lastPoint = { x: t.clientX - rect.left, y: t.clientY - rect.top };
+      ctx.beginPath();
+      ctx.moveTo(lastPoint.x, lastPoint.y);
       e.preventDefault();
-    }
-    function endDrawing() {
-      if (isDrawing) {
-        isDrawing = false;
-        ctx.beginPath();
-        db.ref("multiFormularios/" + formKey + "/firmas/" + firmaKey).set(canvas.toDataURL("image/png"));
-      }
-    }
-    canvas.onmousedown = startDrawing;
-    canvas.onmousemove = draw;
-    canvas.onmouseup = endDrawing;
-    canvas.onmouseout = endDrawing;
-    canvas.ontouchstart = startDrawing;
-    canvas.ontouchmove = draw;
-    canvas.ontouchend = endDrawing;
-  }
-
-  function borrarFirmaSync(formKey, firmaKey) {
-    const canvas = document.getElementById(firmaKey + "_" + formKey);
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-    db.ref("multiFormularios/" + formKey + "/firmas/" + firmaKey).set("");
-  }
-
-  function guardarFormularioSync(formKey) {
-    const page = document.getElementById("formulario_" + formKey);
-    const datos = {};
-    Array.from(page.querySelectorAll('input')).forEach(input => {
-      datos[input.id.replace("_" + formKey, "")] = (input.type === "checkbox" || input.type === "radio") ? input.checked : input.value;
+    }, { passive: false });
+    canvas.addEventListener('touchmove', e => {
+      if (!isDrawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches[0];
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#000";
+      ctx.lineTo(t.clientX - rect.left, t.clientY - rect.top);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(t.clientX - rect.left, t.clientY - rect.top);
+      e.preventDefault();
+    }, { passive: false });
+    canvas.addEventListener('touchend', () => {
+      isDrawing = false;
+      ctx.beginPath();
     });
-    db.ref("formularios").push(datos)
-      .then(() => alert("✅ Datos guardados en Firebase"))
-      .catch((error) => alert("❌ Error al guardar: " + error.message));
   }
 
-  function imprimirDesdeApp() {
-    window.print();
-  }
-
-  function renderAllFormularios(formularios) {
-    const container = document.getElementById("formularios-container");
-    // Si no hay formularios en Firebase, mostramos el formulario original (plantilla)
-    if (!formularios || Object.keys(formularios).length === 0) {
-      document.getElementById("formulario-original").style.display = "";
-      return;
-    }
-    container.innerHTML = "";
-    Object.entries(formularios).forEach(([key, value], idx) => {
-      const orig = document.getElementById("formulario-original");
-      const page = orig.cloneNode(true);
-      page.id = "formulario_" + key;
-      page.style.display = "";
-      setFormularioDataToDOM(page, value.datos || {});
-      // IDs únicos para canvases
-      const canvas1 = page.querySelector("#canvasFirma1");
-      const canvas2 = page.querySelector("#canvasFirma2");
-      canvas1.id = "canvasFirma1_" + key;
-      canvas2.id = "canvasFirma2_" + key;
-      setFirmaCanvasFromData(canvas1, value.firmas?.canvasFirma1);
-      setFirmaCanvasFromData(canvas2, value.firmas?.canvasFirma2);
-      // Botones de firma
-      Array.from(page.querySelectorAll('button')).forEach(btn => {
-        if (btn.textContent.includes('Borrar Firma')) {
-          if (btn.previousElementSibling && btn.previousElementSibling.id.startsWith("canvasFirma1_"))
-            btn.setAttribute('onclick', `borrarFirmaSync('${key}','canvasFirma1')`);
-          if (btn.previousElementSibling && btn.previousElementSibling.id.startsWith("canvasFirma2_"))
-            btn.setAttribute('onclick', `borrarFirmaSync('${key}','canvasFirma2')`);
-        }
-        if (btn.textContent.includes('Guardar en Firebase')) btn.setAttribute('onclick', `guardarFormularioSync('${key}')`);
-        if (btn.textContent.includes('Imprimir o Guardar como PDF')) btn.setAttribute('onclick', 'imprimirDesdeApp()');
+  // ----- CRUD -----
+  // Carga todos los formularios desde Firebase
+  function cargarFormularios() {
+    db.ref('formularios').on('value', snapshot => {
+      const cont = document.getElementById('formularios-container');
+      cont.innerHTML = '';
+      const data = snapshot.val();
+      if (!data) return;
+      Object.entries(data).forEach(([key, datos]) => {
+        const page = htmlToElement(FORMULARIO_BASE);
+        page.setAttribute('data-firebase-id', key);
+        datosAFormulario(page, datos);
+        page.querySelector('.btn-eliminar-formulario').style.display = 'block';
+        inicializarEventosFormulario(page, key);
+        cont.appendChild(page);
       });
-      setTimeout(() => {
-        initFirmaCanvasRealtime(canvas1, key, "canvasFirma1");
-        initFirmaCanvasRealtime(canvas2, key, "canvasFirma2");
-        Array.from(page.querySelectorAll('input,select')).forEach(el => {
-          el.onchange = function() {
-            let nombre = el.id.replace("_" + key, "");
-            let val = el.type === "checkbox" ? el.checked : el.value;
-            if (el.type === "radio" && !el.checked) return;
-            db.ref("multiFormularios/" + key + "/datos/" + nombre).set(val);
-          }
-        });
-      }, 10);
-      container.appendChild(page);
-    });
-    document.getElementById("formulario-original").style.display = "none";
-  }
-
-  db.ref("multiFormularios").once("value").then(snap => {
-    if (!snap.exists()) {
-      const key = Date.now().toString();
-      const datos = getFormularioDataFromDOM(document.getElementById("formulario-original"));
-      db.ref("multiFormularios/" + key).set({ datos, firmas: { canvasFirma1: "", canvasFirma2: "" } });
-    }
-    listenMultiFormularios();
-  });
-
-  function listenMultiFormularios() {
-    db.ref("multiFormularios").on("value", snap => {
-      const data = snap.val() || {};
-      renderAllFormularios(data);
     });
   }
 
+  // Añade un nuevo formulario vacío y sincroniza con Firebase al guardar
   function nuevoFormulario() {
-    const key = Date.now().toString();
-    const datos = getFormularioDataFromDOM(document.getElementById("formulario-original"));
-    db.ref("multiFormularios/" + key).set({ datos, firmas: { canvasFirma1: "", canvasFirma2: "" } });
+    const page = htmlToElement(FORMULARIO_BASE);
+    page.querySelector('.btn-eliminar-formulario').style.display = 'block';
+    inicializarEventosFormulario(page);
+    document.getElementById('formularios-container').appendChild(page);
+    setTimeout(() => {
+      // Fecha/hora automática
+      const f = page.querySelector('[data-field="fechaHora"]');
+      if (f) f.value = new Date().toLocaleString();
+    }, 100);
   }
 
+  // Inicializa todos los eventos: firmas, guardar, borrar firma, eliminar, imprimir...
+  function inicializarEventosFormulario(page, firebaseId = null) {
+    // Firmas
+    page.querySelectorAll('.canvas-firma').forEach(initFirmaCanvas);
+
+    // Borrar firmas
+    page.querySelectorAll('.btn-borrar-firma').forEach(btn => {
+      btn.onclick = function() {
+        const canvas = btn.parentNode.querySelector('canvas');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      };
+    });
+
+    // Guardar en Firebase
+    page.querySelector('.btn-guardar-firebase').onclick = function() {
+      const datos = formularioADatos(page);
+      if (firebaseId) {
+        db.ref('formularios/' + firebaseId).set(datos).then(() => {
+          alert("✅ Actualizado en Firebase");
+        }).catch(e => alert("❌ Error: " + e.message));
+      } else {
+        const ref = db.ref('formularios').push();
+        ref.set(datos).then(() => {
+          alert("✅ Guardado en Firebase");
+          page.setAttribute('data-firebase-id', ref.key);
+        }).catch(e => alert("❌ Error: " + e.message));
+      }
+    };
+
+    // Eliminar formulario
+    page.querySelector('.btn-eliminar-formulario').onclick = function() {
+      if (firebaseId) {
+        if (confirm("¿Eliminar este formulario?")) {
+          db.ref('formularios/' + firebaseId).remove();
+        }
+      } else {
+        page.remove();
+      }
+    };
+
+    // Imprimir/PDF
+    page.querySelector('.btn-imprimir').onclick = function() {
+      // Solo imprime este formulario
+      const originalHtml = document.body.innerHTML;
+      document.body.innerHTML = '';
+      document.body.appendChild(page.cloneNode(true));
+      window.print();
+      document.body.innerHTML = originalHtml;
+      cargarFormularios();
+    };
+  }
+
+  // Utilidad: string HTML a elemento DOM
+  function htmlToElement(html) {
+    const template = document.createElement('template');
+    html = html.trim();
+    template.innerHTML = html;
+    return template.content.firstChild;
+  }
+
+  // Imprimir todos los formularios
   function imprimirTodos() {
     window.print();
   }
 
-  // El formulario original NUNCA se oculta al cargar, solo se oculta cuando hay formularios sincronizados en firebase
+  // Inicialización
+  document.addEventListener("DOMContentLoaded", () => {
+    cargarFormularios();
+  });
+
+  // Exportar funciones a global
+  window.nuevoFormulario = nuevoFormulario;
+  window.imprimirTodos = imprimirTodos;
 </script>
 </body>
 </html>
