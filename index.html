@@ -283,78 +283,43 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // SINCRONIZACION MULTI FORMULARIO
-  let ignoreChange = false;
-  function listenMultiFormularios() {
-    db.ref("multiFormularios").on("value", snap => {
-      if(ignoreChange) return;
-      const cont = document.getElementById('formularios-container');
-      cont.innerHTML = "";
-      const data = snap.val() || {};
-      Object.keys(data).forEach(id => {
-        cont.appendChild(createFormularioFromData(data[id], id));
-      });
+  // Cambios mínimos pedidos:
+  // 1. Siempre muestra el primer formulario al cargar (si no hay datos en firebase).
+  // 2. Formularios y firmas sincronizados en tiempo real entre pestañas.
+  // 3. Cuando agregues formularios, se sincronizan y aparecen en todas las pestañas.
+
+  // --- INICIO CAMBIOS ---
+  function getFormularioDataFromDOM(node) {
+    const data = {};
+    Array.from(node.querySelectorAll('input')).forEach(input => {
+      data[input.id] = (input.type === "checkbox" || input.type === "radio") ? input.checked : input.value;
     });
+    return data;
   }
 
-  function createFormularioFromData(data, id) {
-    // clona el html original y le pone los datos y eventos
-    const original = document.getElementById('formulario-original');
-    const clone = original.cloneNode(true);
-    clone.id = "formulario_" + id;
-    // limpia todos los campos
-    Array.from(clone.querySelectorAll('input')).forEach(input => {
-      let val = data[input.id] || "";
-      if(input.type === "checkbox" || input.type === "radio") {
-        input.checked = !!val;
-      } else {
-        input.value = val;
+  function setFormularioDataToDOM(node, data) {
+    Array.from(node.querySelectorAll('input')).forEach(input => {
+      if (data[input.id] !== undefined) {
+        if (input.type === "checkbox" || input.type === "radio") {
+          input.checked = !!data[input.id];
+        } else {
+          input.value = data[input.id];
+        }
       }
-      // eventos de cambio sincronizados
-      input.onchange = function() {
-        const value = input.type === "checkbox" || input.type === "radio" ? input.checked : input.value;
-        ignoreChange = true;
-        db.ref("multiFormularios/" + id + "/" + input.id).set(value).then(()=>{ignoreChange=false});
-      };
     });
-    // firma canvases
-    let firma1id = "canvasFirma1_"+id;
-    let firma2id = "canvasFirma2_"+id;
-    clone.querySelector("#canvasFirma1").id = firma1id;
-    clone.querySelector("#canvasFirma2").id = firma2id;
-    // Cargar firma de firebase
-    setTimeout(()=>{
-      initFirmaCanvasSync(firma1id, id, "firma1");
-      initFirmaCanvasSync(firma2id, id, "firma2");
-      if(data["firma1"]) loadFirmaImg(firma1id, data["firma1"]);
-      if(data["firma2"]) loadFirmaImg(firma2id, data["firma2"]);
-    }, 50);
-    // Botones
-    Array.from(clone.querySelectorAll('button')).forEach(btn => {
-      if (btn.textContent.includes('Borrar Firma')) {
-        btn.setAttribute('onclick', `borrarFirmaSync('${firma1id}','${id}','firma1')`);
-        if(btn.previousElementSibling.id === firma2id)
-          btn.setAttribute('onclick', `borrarFirmaSync('${firma2id}','${id}','firma2')`);
-      }
-      if (btn.textContent.includes('Guardar en Firebase')) btn.setAttribute('onclick', `guardarFormularioSync('${id}')`);
-      if (btn.textContent.includes('Imprimir o Guardar como PDF')) btn.setAttribute('onclick', 'imprimirDesdeApp()');
-    });
-    return clone;
   }
 
-  function loadFirmaImg(canvasid, dataurl) {
-    const c = document.getElementById(canvasid);
-    if (!c || !dataurl) return;
-    const ctx = c.getContext('2d');
-    ctx.clearRect(0,0,c.width,c.height);
-    const img = new Image();
-    img.onload = ()=>ctx.drawImage(img,0,0,c.width,c.height);
-    img.src = dataurl;
+  function setFirmaCanvasFromData(canvas, data) {
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (data) {
+      const img = new Image();
+      img.onload = () => ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      img.src = data;
+    }
   }
 
-  function initFirmaCanvasSync(canvasId, formId, campo) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
+  function initFirmaCanvasRealtime(canvas, formKey, firmaKey) {
     const ctx = canvas.getContext('2d');
     let isDrawing = false;
     function getPos(e) {
@@ -375,17 +340,21 @@
     function draw(e) {
       if (!isDrawing) return;
       let p = getPos(e);
-      ctx.lineWidth = 2; ctx.lineCap = "round"; ctx.strokeStyle = "#000";
-      ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(p.x, p.y);
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#000";
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
       e.preventDefault();
     }
     function endDrawing() {
       if (isDrawing) {
         isDrawing = false;
         ctx.beginPath();
-        const dataURL = canvas.toDataURL("image/png");
-        ignoreChange = true;
-        db.ref("multiFormularios/"+formId+"/"+campo).set(dataURL).then(()=>{ignoreChange=false});
+        // Sincroniza firma con firebase
+        db.ref("multiFormularios/" + formKey + "/firmas/" + firmaKey).set(canvas.toDataURL("image/png"));
       }
     }
     canvas.onmousedown = startDrawing;
@@ -397,102 +366,113 @@
     canvas.ontouchend = endDrawing;
   }
 
-  function borrarFirmaSync(canvasid,formid,campo){
-    const canvas = document.getElementById(canvasid);
-    if(!canvas) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ignoreChange = true;
-    db.ref("multiFormularios/"+formid+"/"+campo).set("").then(()=>{ignoreChange=false});
+  function borrarFirmaSync(formKey, firmaKey) {
+    const canvas = document.getElementById(firmaKey + "_" + formKey);
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    db.ref("multiFormularios/" + formKey + "/firmas/" + firmaKey).set("");
   }
 
-  function guardarFormularioSync(id){
-    // Guardar en formularios (igual que original, pero por id)
+  function guardarFormularioSync(formKey) {
+    const page = document.getElementById("formulario_" + formKey);
     const datos = {};
-    const cont = document.getElementById("formulario_"+id);
-    Array.from(cont.querySelectorAll('input')).forEach(input => {
-      datos[input.id.replace("_"+id,"")] = input.type==="checkbox"||input.type==="radio"?input.checked:input.value;
+    Array.from(page.querySelectorAll('input')).forEach(input => {
+      datos[input.id.replace("_" + formKey, "")] = (input.type === "checkbox" || input.type === "radio") ? input.checked : input.value;
     });
     db.ref("formularios").push(datos)
       .then(() => alert("✅ Datos guardados en Firebase"))
       .catch((error) => alert("❌ Error al guardar: " + error.message));
   }
 
-  // NUEVO FORMULARIO: añade otro formulario como .page y lo sincroniza
-  function nuevoFormulario() {
-    const id = Date.now().toString();
-    const original = document.getElementById('formulario-original');
-    const data = {};
-    Array.from(original.querySelectorAll('input')).forEach(input => {
-      data[input.id] = input.type==="checkbox"||input.type==="radio"?input.checked:input.value;
-    });
-    db.ref("multiFormularios/"+id).set(data);
-  }
-
-  // IMPRIMIR TODOS LOS FORMULARIOS
-  function imprimirTodos() {
-    window.print();
-  }
   function imprimirDesdeApp() {
     window.print();
   }
 
-  // INICIAL
-  document.addEventListener("DOMContentLoaded", () => {
+  // Renderiza las páginas desde firebase
+  function renderAllFormularios(formularios) {
+    const container = document.getElementById("formularios-container");
+    container.innerHTML = "";
+    Object.entries(formularios).forEach(([key, value], idx) => {
+      // Clona formulario original y le pone los datos
+      const orig = document.getElementById("formulario-original");
+      const page = orig.cloneNode(true);
+      page.id = "formulario_" + key;
+      // Inputs
+      setFormularioDataToDOM(page, value.datos || {});
+      // Canvases
+      // IDs únicos para canvases
+      const canvas1 = page.querySelector("#canvasFirma1");
+      const canvas2 = page.querySelector("#canvasFirma2");
+      canvas1.id = "canvasFirma1_" + key;
+      canvas2.id = "canvasFirma2_" + key;
+      setFirmaCanvasFromData(canvas1, value.firmas?.canvasFirma1);
+      setFirmaCanvasFromData(canvas2, value.firmas?.canvasFirma2);
+      // Botones de firma
+      Array.from(page.querySelectorAll('button')).forEach(btn => {
+        if (btn.textContent.includes('Borrar Firma')) {
+          if (btn.previousElementSibling && btn.previousElementSibling.id.startsWith("canvasFirma1_"))
+            btn.setAttribute('onclick', `borrarFirmaSync('${key}','canvasFirma1')`);
+          if (btn.previousElementSibling && btn.previousElementSibling.id.startsWith("canvasFirma2_"))
+            btn.setAttribute('onclick', `borrarFirmaSync('${key}','canvasFirma2')`);
+        }
+        if (btn.textContent.includes('Guardar en Firebase')) btn.setAttribute('onclick', `guardarFormularioSync('${key}')`);
+        if (btn.textContent.includes('Imprimir o Guardar como PDF')) btn.setAttribute('onclick', 'imprimirDesdeApp()');
+      });
+      // Firma canvas: realtime sync al dibujar
+      setTimeout(() => {
+        initFirmaCanvasRealtime(canvas1, key, "canvasFirma1");
+        initFirmaCanvasRealtime(canvas2, key, "canvasFirma2");
+        // Sincroniza cambios de campos
+        Array.from(page.querySelectorAll('input,select')).forEach(el => {
+          el.onchange = function() {
+            let nombre = el.id.replace("_" + key, "");
+            let val = el.type === "checkbox" ? el.checked : el.value;
+            if (el.type === "radio" && !el.checked) return;
+            db.ref("multiFormularios/" + key + "/datos/" + nombre).set(val);
+          }
+        });
+      }, 10);
+      container.appendChild(page);
+    });
+  }
+
+  // Al iniciar: si no hay formularios en firebase, crea uno por defecto
+  db.ref("multiFormularios").once("value").then(snap => {
+    if (!snap.exists()) {
+      // Crear el primero automáticamente
+      const key = Date.now().toString();
+      const datos = getFormularioDataFromDOM(document.getElementById("formulario-original"));
+      db.ref("multiFormularios/" + key).set({ datos, firmas: { canvasFirma1: "", canvasFirma2: "" } });
+    }
     listenMultiFormularios();
-    // el original solo para el primer formulario
-    initFirmaCanvas('canvasFirma1');
-    initFirmaCanvas('canvasFirma2');
   });
 
-  function initFirmaCanvas(idCanvas) {
-    const canvas = document.getElementById(idCanvas);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false, lastPoint = null;
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      if (e.touches && e.touches.length > 0) {
-        return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-      } else {
-        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
-      }
-    }
-    function startDrawing(e) {
-      isDrawing = true;
-      lastPoint = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(lastPoint.x, lastPoint.y);
-      e.preventDefault();
-    }
-    function draw(e) {
-      if (!isDrawing) return;
-      const currentPoint = getPos(e);
-      ctx.lineWidth = 2;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.strokeStyle = "#000";
-      ctx.lineTo(currentPoint.x, currentPoint.y);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(currentPoint.x, currentPoint.y);
-      lastPoint = currentPoint;
-      e.preventDefault();
-    }
-    function endDrawing(e) {
-      if (isDrawing) {
-        isDrawing = false;
-        ctx.beginPath();
-      }
-    }
-    canvas.addEventListener("mousedown", startDrawing);
-    canvas.addEventListener("mousemove", draw);
-    canvas.addEventListener("mouseup", endDrawing);
-    canvas.addEventListener("mouseout", endDrawing);
-    canvas.addEventListener("touchstart", startDrawing, { passive: false });
-    canvas.addEventListener("touchmove", draw, { passive: false });
-    canvas.addEventListener("touchend", endDrawing);
+  function listenMultiFormularios() {
+    db.ref("multiFormularios").on("value", snap => {
+      const data = snap.val() || {};
+      renderAllFormularios(data);
+    });
   }
+
+  // Botón para nuevo formulario
+  function nuevoFormulario() {
+    const key = Date.now().toString();
+    const datos = getFormularioDataFromDOM(document.getElementById("formulario-original"));
+    db.ref("multiFormularios/" + key).set({ datos, firmas: { canvasFirma1: "", canvasFirma2: "" } });
+  }
+
+  // Botón imprimir todos
+  function imprimirTodos() {
+    window.print();
+  }
+
+  // El formulario original se oculta para que sirva solo de plantilla
+  window.onload = function() {
+    document.getElementById("formulario-original").style.display = "none";
+  }
+  // --- FIN CAMBIOS ---
 </script>
 </body>
 </html>
