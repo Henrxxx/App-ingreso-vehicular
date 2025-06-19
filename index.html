@@ -101,175 +101,153 @@
   </div>
   <div id="formularios-container">
     <div class="page" id="formulario-original">
-    <!-- Los formularios se cargarán aquí dinámicamente -->
-  </div>
-<script>
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBfaasdLIwsBsKy9HlULNMzm-1ec-e83bg",
-    authDomain: "ingreso-vehicular---cargus.firebaseapp.com",
-    databaseURL: "https://ingreso-vehicular---cargus-default-rtdb.firebaseio.com",
-    projectId: "ingreso-vehicular---cargus",
-    storageBucket: "ingreso-vehicular---cargus.appspot.com",
-    messagingSenderId: "135874840623",
-    appId: "1:135874840623:web:17139f071fc0dc9cb35eda"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  // ----- FORMULARIO BASE -----
-  // (El HTML del formulario base, sin id repetidos, se usará para clonar nuevos formularios)
-  const FORMULARIO_BASE = `
-</script>
-    <div class="page">
-      <button class="btn-eliminar-formulario no-print" style="display:none;" type="button">🗑️ Eliminar</button>
       <div class="membrete">
         <img src="membrete Cargus.png" alt="Membrete Cargus">
       </div>
-      <div class="no-top">No.: <input type="text" data-field="numDocumento" style="width: 100px;"></div>
+      <div class="no-top">No.: <input type="text" id="numDocumento" style="width: 100px;"></div>
       <table>
         <tr>
           <td class="td">Fecha / Hora:</td>
-          <td><input type="text" data-field="fechaHora" readonly></td>
+          <td><input type="text" id="fechaHora" readonly></td>
           <td class="td">Asesor de Servicio:</td>
-          <td><input type="text" data-field="asesor" placeholder="Henry Galindo"></td>
+          <td><input type="text" id="asesor" placeholder="Henry Galindo"></td>
         </tr>
         <tr>
-          <td class="td">Nombre del Cliente:</td><td><input type="text" data-field="cliente"></td>
-          <td class="td">Teléfono:</td><td><input type="text" data-field="telefono"></td>
+          <td class="td">Nombre del Cliente:</td><td><input type="text" id="cliente"></td>
+          <td class="td">Teléfono:</td><td><input type="text" id="telefono"></td>
         </tr>
         <tr>
-          <td class="td">Email:</td><td colspan="3"><input type="email" data-field="email"></td>
+          <td class="td">Email:</td><td colspan="3"><input type="email" id="email"></td>
         </tr>
         <tr>
-          <td class="td">Marca:</td><td><input type="text" data-field="marca"></td>
-          <td class="td">Placa:</td><td><input type="text" data-field="placa"></td>
+          <td class="td">Marca:</td><td><input type="text" id="marca"></td>
+          <td class="td">Placa:</td><td><input type="text" id="placa"></td>
         </tr>
         <tr>
-          <td class="td">TAG:</td><td><input type="text" data-field="tag"></td>
-          <td class="td">No. Vehículo:</td><td><input type="text" data-field="numeroVehiculo"></td>
+          <td class="td">TAG:</td><td><input type="text" id="tag"></td>
+          <td class="td">No. Vehículo:</td><td><input type="text" id="numeroVehiculo"></td>
         </tr>
         <tr>
-          <td class="td">VIN/Chasis:</td><td colspan="3"><input type="text" data-field="vin"></td>
+          <td class="td">VIN/Chasis:</td><td colspan="3"><input type="text" id="vin"></td>
         </tr>
         <tr>
           <td class="td">Condición:</td>
           <td colspan="3">
-            <label class="checkbox-label"><input type="radio" name="condicion" value="nuevo" data-field="condicion"> Nuevo</label>
-            <label class="checkbox-label"><input type="radio" name="condicion" value="usado" data-field="condicion"> Usado</label>
+            <label class="checkbox-label"><input type="radio" name="condicion" value="nuevo"> Nuevo</label>
+            <label class="checkbox-label"><input type="radio" name="condicion" value="usado"> Usado</label>
           </td>
         </tr>
       </table>
       <table>
         <tr class="td"><th colspan="2">Estado General del Vehículo</th></tr>
         <tr>
-          <td><input type="checkbox" data-field="estadoDeficiente"> Presenta deficiencia en su funcionamiento</td>
-          <td><input type="checkbox" data-field="estadoBueno"> No muestra daños, en buenas condiciones</td>
+          <td><input type="checkbox" id="estadoDeficiente"> Presenta deficiencia en su funcionamiento</td>
+          <td><input type="checkbox" id="estadoBueno"> No muestra daños, en buenas condiciones</td>
         </tr>
       </table>
       <table>
         <tr class="td"><th colspan="3">Reparaciones o Indicaciones de Carrocería</th></tr>
         <tr>
-          <td><input type="checkbox" data-field="reparacionRequiere"> Requiere Reparación</td>
-          <td><input type="checkbox" data-field="reparacionRevision"> Revisión para determinar daño</td>
-          <td><input type="checkbox" data-field="reparacionBueno"> No muestra daños, óptimas condiciones</td>
+          <td><input type="checkbox" id="reparacionRequiere"> Requiere Reparación</td>
+          <td><input type="checkbox" id="reparacionRevision"> Revisión para determinar daño</td>
+          <td><input type="checkbox" id="reparacionBueno"> No muestra daños, óptimas condiciones</td>
         </tr>
       </table>
       <table>
         <tr class="td"><th colspan="3">Estado Interno del Vehículo / Consultas al Cliente</th></tr>
         <tr>
           <td colspan="3">
-            <label><input type="checkbox" data-field="internoAsiento"> Asiento</label>
-            <label><input type="checkbox" data-field="internoTimon"> Timón</label>
-            <label><input type="checkbox" data-field="internoTAG"> TAG</label>
-            <label><input type="checkbox" data-field="internoLuces"> Luces interiores</label>
-            <label><input type="checkbox" data-field="internoDocs"> Documentación</label>
-            <label><input type="checkbox" data-field="internoPermiso"> Permiso de explotación</label>
-            <label><input type="checkbox" data-field="internoFallas"> Fallas</label>
-            <label><input type="checkbox" data-field="internoOtros"> Otros</label>
+            <label><input type="checkbox" id="internoAsiento"> Asiento</label>
+            <label><input type="checkbox" id="internoTimon"> Timón</label>
+            <label><input type="checkbox" id="internoTAG"> TAG</label>
+            <label><input type="checkbox" id="internoLuces"> Luces interiores</label>
+            <label><input type="checkbox" id="internoDocs"> Documentación</label>
+            <label><input type="checkbox" id="internoPermiso"> Permiso de explotación</label>
+            <label><input type="checkbox" id="internoFallas"> Fallas</label>
+            <label><input type="checkbox" id="internoOtros"> Otros</label>
           </td>
         </tr>
       </table>
       <table>
         <tr class="td"><th colspan="4">Funcionamiento General</th></tr>
         <tr>
-          <td>Kilometraje:<input type="text" data-field="funcKm"></td>
-          <td>Combustible: E <input type="checkbox" data-field="combE">
-              1/4 <input type="checkbox" data-field="comb14">
-              1/2 <input type="checkbox" data-field="comb12">
-              3/4 <input type="checkbox" data-field="comb34">
-              F   <input type="checkbox" data-field="combF"></td>
-          <td><input type="checkbox" data-field="funcBocinas"> Bocinas</td>
-          <td><input type="checkbox" data-field="funcEmbrague"> Embrague</td>
+          <td>Kilometraje:<input type="text" id="funcKm"></td>
+          <td>Combustible: E <input type="checkbox" id="combE">
+              1/4 <input type="checkbox" id="comb14">
+              1/2 <input type="checkbox" id="comb12">
+              3/4 <input type="checkbox" id="comb34">
+              F   <input type="checkbox" id="combF"></td>
+          <td><input type="checkbox" id="funcBocinas"> Bocinas</td>
+          <td><input type="checkbox" id="funcEmbrague"> Embrague</td>
         </tr>
         <tr>
-          <td><input type="checkbox" data-field="funcFrenoEmerg"> Freno Emergencia</td>
-          <td><input type="checkbox" data-field="funcLuces"> Luces</td>
-          <td><input type="checkbox" data-field="funcAC"> A/C</td>
-          <td><input type="checkbox" data-field="funcParabrisas"> Parabrisas</td>
+          <td><input type="checkbox" id="funcFrenoEmerg"> Freno Emergencia</td>
+          <td><input type="checkbox" id="funcLuces"> Luces</td>
+          <td><input type="checkbox" id="funcAC"> A/C</td>
+          <td><input type="checkbox" id="funcParabrisas"> Parabrisas</td>
         </tr>
         <tr>
-          <td><input type="checkbox" data-field="funcPuertas"> Llavines Puertas</td>
-          <td><input type="checkbox" data-field="funcMotor"> Motor</td>
-          <td><input type="checkbox" data-field="funcLimpia"> Limpiaparabrisas</td>
-          <td><input type="checkbox" data-field="funcRociador"> Rociador</td>
+          <td><input type="checkbox" id="funcPuertas"> Llavines Puertas</td>
+          <td><input type="checkbox" id="funcMotor"> Motor</td>
+          <td><input type="checkbox" id="funcLimpia"> Limpiaparabrisas</td>
+          <td><input type="checkbox" id="funcRociador"> Rociador</td>
         </tr>
       </table>
       <table>
         <tr class="td"><th colspan="4">Accesorios del Vehículo</th></tr>
         <tr>
-          <td><input type="checkbox" data-field="accBateria"> Batería</td>
-          <td><input type="checkbox" data-field="accBornes"> Borners</td>
-          <td><input type="checkbox" data-field="accProtector"> Protector Batería</td>
-          <td><input type="checkbox" data-field="accRetrovisores"> Retrovisores</td>
+          <td><input type="checkbox" id="accBateria"> Batería</td>
+          <td><input type="checkbox" id="accBornes"> Borners</td>
+          <td><input type="checkbox" id="accProtector"> Protector Batería</td>
+          <td><input type="checkbox" id="accRetrovisores"> Retrovisores</td>
         </tr>
         <tr>
-          <td><input type="checkbox" data-field="accCeniceros"> Ceniceros</td>
-          <td><input type="checkbox" data-field="accEncendedor"> Encendedor</td>
-          <td><input type="checkbox" data-field="accLlantaRepuesto"> Llanta Repuesto</td>
-          <td><input type="checkbox" data-field="accAlfombras"> Alfombras</td>
+          <td><input type="checkbox" id="accCeniceros"> Ceniceros</td>
+          <td><input type="checkbox" id="accEncendedor"> Encendedor</td>
+          <td><input type="checkbox" id="accLlantaRepuesto"> Llanta Repuesto</td>
+          <td><input type="checkbox" id="accAlfombras"> Alfombras</td>
         </tr>
         <tr>
-          <td><input type="checkbox" data-field="accRadio"> Radio</td>
-          <td><input type="checkbox" data-field="accAntena"> Antena</td>
-          <td><input type="checkbox" data-field="accLoderas"> Loderas</td>
-          <td><input type="checkbox" data-field="accVarillaAceite"> Varilla Aceite</td>
+          <td><input type="checkbox" id="accRadio"> Radio</td>
+          <td><input type="checkbox" id="accAntena"> Antena</td>
+          <td><input type="checkbox" id="accLoderas"> Loderas</td>
+          <td><input type="checkbox" id="accVarillaAceite"> Varilla Aceite</td>
         </tr>
         <tr>
-          <td><input type="checkbox" data-field="accTaponComb"> Tapón Combustible</td>
-          <td><input type="checkbox" data-field="accTaponAceite"> Tapón Aceite</td>
-          <td><input type="checkbox" data-field="accAceiteHidraulico"> Aceite Hidráulico</td>
-          <td><input type="checkbox" data-field="accReservaAgua"> Reserva Agua</td>
+          <td><input type="checkbox" id="accTaponComb"> Tapón Combustible</td>
+          <td><input type="checkbox" id="accTaponAceite"> Tapón Aceite</td>
+          <td><input type="checkbox" id="accAceiteHidraulico"> Aceite Hidráulico</td>
+          <td><input type="checkbox" id="accReservaAgua"> Reserva Agua</td>
         </tr>
         <tr>
-          <td><input type="checkbox" data-field="accAguaParabrisas"> Agua Parabrisas</td>
-          <td><input type="checkbox" data-field="accHerramientas"> Herramientas</td>
-          <td colspan="2">Jack <input type="checkbox" data-field="accJack">
-            Llave ruedas <input type="checkbox" data-field="accLlaveRuedas">
-            Maneral <input type="checkbox" data-field="accManeral">
-            Otros: <input type="text" data-field="accOtros"></td>
+          <td><input type="checkbox" id="accAguaParabrisas"> Agua Parabrisas</td>
+          <td><input type="checkbox" id="accHerramientas"> Herramientas</td>
+          <td colspan="2">Jack <input type="checkbox" id="accJack">
+            Llave ruedas <input type="checkbox" id="accLlaveRuedas">
+            Maneral <input type="checkbox" id="accManeral">
+            Otros: <input type="text" id="accOtros"></td>
         </tr>
       </table>
       <table>
         <tr class="td"><th colspan="2">Seleccione daños en la carroceria</th></tr>
         <tr>
-          <td><input type="checkbox" data-field="danioPintura"> Daño en la pintura</td>
-          <td><input type="checkbox" data-field="danioCristal"> Daño en el cristal</td>
-          <td><input type="checkbox" data-field="danioLuces"> Daño en las luces</td>
-          <td><input type="checkbox" data-field="danioFrontal"> Daño en pared frontal</td>
+          <td><input type="checkbox" id="danioPintura"> Daño en la pintura</td>
+          <td><input type="checkbox" id="danioCristal"> Daño en el cristal</td>
+          <td><input type="checkbox" id="danioLuces"> Daño en las luces</td>
+          <td><input type="checkbox" id="danioFrontal"> Daño en pared frontal</td>
         </tr>
         <tr>
-          <td><input type="checkbox" data-field="danioTecho"> Daño en el techo</td>
-          <td><input type="checkbox" data-field="danioPuertas"> Daño en las puertas</td>
-          <td><input type="checkbox" data-field="danioLaterales"> Daño en paredes laterales</td>
-          <td><input type="checkbox" data-field="danioCabina"> Daño en la cabina</td>
+          <td><input type="checkbox" id="danioTecho"> Daño en el techo</td>
+          <td><input type="checkbox" id="danioPuertas"> Daño en las puertas</td>
+          <td><input type="checkbox" id="danioLaterales"> Daño en paredes laterales</td>
+          <td><input type="checkbox" id="danioCabina"> Daño en la cabina</td>
         </tr>
       </table>
       <div class="firma">
         <p>Indicaciones especiales del cliente:</p>
-        <p>a) <input type="text" data-field="indicacionA" style="width:90%"></p>
-        <p>b) <input type="text" data-field="indicacionB" style="width:90%"></p>
-        <p>c) <input type="text" data-field="indicacionC" style="width:90%"></p>
+        <p>a) <input type="text" id="indicacionA" style="width:90%"></p>
+        <p>b) <input type="text" id="indicacionB" style="width:90%"></p>
+        <p>c) <input type="text" id="indicacionC" style="width:90%"></p>
       </div>
       <table class="table">
         <tr>
@@ -355,14 +333,15 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    // Inicializa canvas y eventos del formulario original al cargar la página
+    initFirmaCanvas('canvasFirma1');
+    initFirmaCanvas('canvasFirma2');
     document.querySelectorAll("input, select").forEach(el => {
       el.addEventListener("change", () => {
         const value = el.type === "checkbox" || el.type === "radio" ? el.checked : el.value;
         if (el.id) db.ref("formulario/" + el.id).set(value);
       });
     });
-    initFirmaCanvas('canvasFirma1');
-    initFirmaCanvas('canvasFirma2');
   });
 
   window.addEventListener("load", () => {
@@ -465,31 +444,36 @@
     });
     // Inserta el nuevo formulario
     document.getElementById('formularios-container').appendChild(clone);
+    // Inicializa canvas firmas en el nuevo formulario
+    Array.from(clone.querySelectorAll('canvas')).forEach(canvas => {
+      initFirmaCanvas(canvas.id);
+    });
   }
 
-  // IMPRIMIR TODOS LOS FORMULARIOS
+  // IMPRIMIR TODOS LOS FORMULARIOS (con firmas como imagen)
   function imprimirTodos() {
-    // 1. Clonar cada formulario y reemplazar canvas por img
     const pages = document.querySelectorAll('.page');
     const clones = [];
     pages.forEach(page => {
       const clone = page.cloneNode(true);
-      clone.querySelectorAll('canvas').forEach(canvas => {
+      // Importante: obtener el toDataURL del canvas ORIGINAL, no del clon
+      const originalCanvases = page.querySelectorAll('canvas');
+      clone.querySelectorAll('canvas').forEach((canvas, idx) => {
         const img = document.createElement('img');
-        img.src = canvas.toDataURL();
-        img.width = canvas.width;
-        img.height = canvas.height;
-        img.style.border = canvas.style.border;
+        if (originalCanvases[idx]) {
+          img.src = originalCanvases[idx].toDataURL();
+          img.width = originalCanvases[idx].width;
+          img.height = originalCanvases[idx].height;
+          img.style.border = originalCanvases[idx].style.border;
+        }
         canvas.parentNode.replaceChild(img, canvas);
       });
       // Oculta botones de la copia
       clone.querySelectorAll('.no-print, .btn-eliminar-formulario').forEach(el => el.style.display = 'none');
       clones.push(clone);
     });
-    // 2. Crear ventana de impresión temporal
     const printWindow = window.open('', '_blank');
     printWindow.document.write('<html><head><title>Imprimir</title>');
-    // Copia estilos
     document.querySelectorAll('style,link[rel="stylesheet"]').forEach(el => {
       printWindow.document.write(el.outerHTML);
     });
