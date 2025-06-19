@@ -112,6 +112,7 @@
     <button onclick="imprimirTodos()">🖨️ Imprimir TODOS los formularios</button>
   </div>
   <div id="formularios-container"></div>
+</body>
 <script>
   // Firebase Config
   const firebaseConfig = {
@@ -298,6 +299,14 @@
     </div>
   `;
 
+  // Actualización en tiempo real de fecha/hora para todos los formularios
+  function tickFechaHoraTodos() {
+    document.querySelectorAll('.fechaHora').forEach(input => {
+      input.value = getFechaHoraActual();
+    });
+    setTimeout(tickFechaHoraTodos, 1000);
+  }
+
   function getFechaHoraActual() {
     const now = new Date();
     return now.getFullYear() + "-" +
@@ -306,16 +315,6 @@
       String(now.getHours()).padStart(2, "0") + ":" +
       String(now.getMinutes()).padStart(2, "0") + ":" +
       String(now.getSeconds()).padStart(2, "0");
-  }
-
-  function tickFechaHora(input) {
-    function update() {
-      if (document.body.contains(input)) {
-        input.value = getFechaHoraActual();
-        setTimeout(update, 1000);
-      }
-    }
-    update();
   }
 
   function initFirmaCanvas(canvas) {
@@ -446,11 +445,6 @@
     if (id) page.setAttribute('data-id', id);
     setFormularioData(page, data || {});
     page.querySelectorAll('.canvasFirma').forEach(initFirmaCanvas);
-
-    // Fecha/hora en vivo SIEMPRE!
-    const fechaInput = page.querySelector('.fechaHora');
-    if (fechaInput) tickFechaHora(fechaInput);
-
     document.getElementById('formularios-container').appendChild(page);
   }
 
@@ -462,13 +456,14 @@
       if (data) {
         Object.entries(data).forEach(([id, datos]) => renderFormulario(id, datos));
       }
-      // Siempre deja un formulario vacío al final
-      renderFormulario();
+      renderFormulario(); // Siempre deja un formulario vacío al final
+      tickFechaHoraTodos(); // Actualiza todos los campos fecha/hora en tiempo real
     });
   }
 
   function nuevoFormulario() {
     renderFormulario();
+    tickFechaHoraTodos();
   }
 
   function imprimirTodos() {
@@ -508,12 +503,10 @@
 
   document.addEventListener("DOMContentLoaded", cargarFormularios);
 
-  // accesibilidad global
   window.nuevoFormulario = nuevoFormulario;
   window.imprimirTodos = imprimirTodos;
   window.eliminarFormulario = eliminarFormulario;
   window.borrarFirma = borrarFirma;
   window.guardarFormulario = guardarFormulario;
 </script>
-</body>
 </html>
