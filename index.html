@@ -266,6 +266,7 @@
       <div style="text-align:center;">
         <button class="no-print" onclick="guardarFormulario()">💾 Guardar en Firebase</button>
         <button class="no-print" onclick="imprimirDesdeApp()">🖨️ Imprimir o Guardar como PDF</button>
+        <button class="no-print" onclick="eliminarFormulario(this)">🗑️ Eliminar formulario</button>
       </div>
     </div>
   </div>
@@ -333,20 +334,30 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    // Inicializa canvas y eventos del formulario original al cargar la página
-    initFirmaCanvas('canvasFirma1');
-    initFirmaCanvas('canvasFirma2');
-    // Fecha/hora automática en el formulario original
-    const fechaInput = document.getElementById('fechaHora');
-    if (fechaInput && !fechaInput.value) {
-      fechaInput.value = new Date().toLocaleString();
+    // Fecha y hora automática y en tiempo real para el formulario original
+    function updateFechaHora() {
+      const fechaInput = document.getElementById('fechaHora');
+      if (fechaInput) {
+        const now = new Date();
+        fechaInput.value = now.getFullYear() + "-" +
+          String(now.getMonth() + 1).padStart(2, "0") + "-" +
+          String(now.getDate()).padStart(2, "0") + " " +
+          String(now.getHours()).padStart(2, "0") + ":" +
+          String(now.getMinutes()).padStart(2, "0") + ":" +
+          String(now.getSeconds()).padStart(2, "0");
+      }
+      setTimeout(updateFechaHora, 1000);
     }
+    updateFechaHora();
+
     document.querySelectorAll("input, select").forEach(el => {
       el.addEventListener("change", () => {
         const value = el.type === "checkbox" || el.type === "radio" ? el.checked : el.value;
         if (el.id) db.ref("formulario/" + el.id).set(value);
       });
     });
+    initFirmaCanvas('canvasFirma1');
+    initFirmaCanvas('canvasFirma2');
   });
 
   window.addEventListener("load", () => {
@@ -418,9 +429,23 @@
         input.value = "";
       }
     });
-    // Poner fecha/hora automática en el nuevo formulario
-    const fecha = clone.querySelector('#fechaHora');
-    if (fecha) fecha.value = new Date().toLocaleString();
+    // Fecha y hora automática y en tiempo real para el nuevo formulario
+    const fechaInput = clone.querySelector('#fechaHora');
+    if (fechaInput) {
+      function updateFechaHoraClone() {
+        if (document.body.contains(fechaInput)) {
+          const now = new Date();
+          fechaInput.value = now.getFullYear() + "-" +
+            String(now.getMonth() + 1).padStart(2, "0") + "-" +
+            String(now.getDate()).padStart(2, "0") + " " +
+            String(now.getHours()).padStart(2, "0") + ":" +
+            String(now.getMinutes()).padStart(2, "0") + ":" +
+            String(now.getSeconds()).padStart(2, "0");
+          setTimeout(updateFechaHoraClone, 1000);
+        }
+      }
+      updateFechaHoraClone();
+    }
     // Limpia las firmas
     Array.from(clone.querySelectorAll('canvas')).forEach((canvas, idx) => {
       const ctx = canvas.getContext('2d');
@@ -449,13 +474,20 @@
       if (btn.textContent.includes('Imprimir o Guardar como PDF')) {
         btn.setAttribute('onclick', 'imprimirDesdeApp()');
       }
+      if (btn.textContent.includes('Eliminar formulario')) {
+        btn.setAttribute('onclick', 'eliminarFormulario(this)');
+      }
     });
     // Inserta el nuevo formulario
     document.getElementById('formularios-container').appendChild(clone);
-    // Inicializa canvas firmas en el nuevo formulario
-    Array.from(clone.querySelectorAll('canvas')).forEach(canvas => {
-      initFirmaCanvas(canvas.id);
-    });
+  }
+
+  // ELIMINAR FORMULARIO CREADO (solo elimina el nodo DOM)
+  function eliminarFormulario(btn) {
+    const page = btn.closest('.page');
+    if (page && confirm("¿Eliminar este formulario?")) {
+      page.remove();
+    }
   }
 
   // IMPRIMIR TODOS LOS FORMULARIOS (con firmas como imagen)
