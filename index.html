@@ -336,6 +336,11 @@
     // Inicializa canvas y eventos del formulario original al cargar la página
     initFirmaCanvas('canvasFirma1');
     initFirmaCanvas('canvasFirma2');
+    // Fecha/hora automática en el formulario original
+    const fechaInput = document.getElementById('fechaHora');
+    if (fechaInput && !fechaInput.value) {
+      fechaInput.value = new Date().toLocaleString();
+    }
     document.querySelectorAll("input, select").forEach(el => {
       el.addEventListener("change", () => {
         const value = el.type === "checkbox" || el.type === "radio" ? el.checked : el.value;
@@ -413,6 +418,9 @@
         input.value = "";
       }
     });
+    // Poner fecha/hora automática en el nuevo formulario
+    const fecha = clone.querySelector('#fechaHora');
+    if (fecha) fecha.value = new Date().toLocaleString();
     // Limpia las firmas
     Array.from(clone.querySelectorAll('canvas')).forEach((canvas, idx) => {
       const ctx = canvas.getContext('2d');
